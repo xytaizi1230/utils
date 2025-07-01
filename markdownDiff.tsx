@@ -10,9 +10,12 @@ export interface DiffResult {
 }
 
 // 字符串转固定长度的base64
-function toShortBase64Key(text, length = 16) {
-  const encoded = btoa(unescape(encodeURIComponent(text)));
-  return encoded.replace(/[^a-zA-Z0-9]/g, '').slice(0, length);
+export function toShortBase36Key(str: string): string {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 33) ^ str.charCodeAt(i);
+  }
+  return (hash >>> 0).toString(36); // 转为 base36 更短
 }
 
 export const diffResultMap = (diff: DiffResult[]) => {
@@ -41,7 +44,7 @@ export const diffResultMap = (diff: DiffResult[]) => {
     .map((line, index) => {
       console.log('🚀 cjc - returncontent.split - line:', line);
       const hSharpMatch = line.match(/^(#{2,6})\s*(.+)$/); // 匹配markdown中的标题内容
-      const key = toShortBase64Key(`${line}_${index}`);
+      const key = toShortBase36Key(`${line}_${index}`);
       if (hSharpMatch) {
         return {
           key,
